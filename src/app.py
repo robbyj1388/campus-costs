@@ -24,7 +24,7 @@ def login():
 
     # Simple authentication check
     if username in users and users[username] == password:
-        return f"<h1>Welcome, {username}!</h1>"
+        return render_template('index.html')
     else:
         return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
 
