@@ -1,0 +1,30 @@
+/*CSS for Homepage for Team Software Proj., Campus Cost */
+
+@charset "UTF-8";
+
+section{
+	display: flex;
+	border: medium, solid, black;
+	font-size: 2em;
+
+}
+
+dl{
+	display: flex;
+	border: medium, solid, black;
+	
+}
+
+.page_header{
+	display: flex;
+	order: 1;
+	
+}
+
+.page_nav{
+	display: flex;
+	order: 2;
+	align-items: center;
+	margin-left: 1em;
+	
+}
