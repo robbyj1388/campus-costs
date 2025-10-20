@@ -27,7 +27,7 @@ def login():
     # Check if username exists and password matches
     if username in users and users[username] == password:
         session['username'] = username  # Save user in session
-        return render_template('../index.html', username=username)
+        return render_template('index.html', username=username)
     else:
         # Invalid login
         return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
@@ -36,6 +36,11 @@ def login():
 @app.route('/register')
 def register():
     return render_template('register.html')
+    
+#Load vending machine template page
+@app.route('/vending_temp')
+def vending_temp():
+    return render_template('vending_temp.html')
 
 # Handle registration form submission
 @app.route('/register', methods=['POST'])
