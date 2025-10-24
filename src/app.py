@@ -41,6 +41,11 @@ def register():
 @app.route('/vending_temp')
 def vending_temp():
     return render_template('vending_temp.html')
+    
+#Load main menu page
+@app.route('/index')
+def index():
+    return render_template('index.html')
 
 # Handle registration form submission
 @app.route('/register', methods=['POST'])
