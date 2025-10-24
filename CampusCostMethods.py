@@ -1,11 +1,23 @@
 import mysql.connector
 
+def getLogin():
+    try:
+        with open("login.env", "r") as file:
+            text = file.read().strip()
+            user = text.split()
+            return (user[0], user[1])
+    except:
+        print("no login file found")
+        pass
+
+
 def serverLogin():
+    username, password = getLogin()
     try:
         connection = mysql.connector.connect(
             host = "classdb.it.mtu.edu",
-            user = "cgclark",
-            password = "Pineapple1!",
+            user = username,
+            password = password,
             database = "cgclark"
         )
         if connection.is_connected():
