@@ -1,6 +1,6 @@
 import mysql.connector
 
-def getLogin():
+def getLogin(): #retrieves login credentials from login.env file
     try:
         with open("login.env", "r") as file:
             text = file.read().strip()
@@ -11,7 +11,7 @@ def getLogin():
         pass
 
 
-def serverLogin():
+def serverLogin(): #connects to the database, returns the connection object, all other methods require this to function
     username, password = getLogin()
     try:
         connection = mysql.connector.connect(
@@ -27,7 +27,7 @@ def serverLogin():
         print(f"Error: {err}")
     return connection
 
-def serverLogout(connection, cursor):
+def serverLogout(connection, cursor): #closes the connection to the database, called at the end of each method
     connection.close()
     cursor.close()
 
@@ -86,7 +86,7 @@ def newProduct(product_name, price, vm_id): #product_name is case sensitive on e
         serverLogout(connection, cursor)
 
 
-def editPrice(product_name, vm_id, new_price, user_email):
+def editPrice(product_name, vm_id, new_price, user_email): #edits the price of a product in a specified VM, records the edit in PriceEdits table
     try:
         connection = serverLogin()
         cursor = connection.cursor()
@@ -157,7 +157,7 @@ def authenticateLogin(user_email, user_password): #password is limited to 30 cha
 
 
 
-def newUser(user_email, user_password):
+def newUser(user_email, user_password): #creates a new user with the specified email and password, returns true if user created, false if email already exists
     try:
         connection = serverLogin()
         cursor = connection.cursor()
@@ -179,3 +179,47 @@ def newUser(user_email, user_password):
     finally :
         serverLogout(connection, cursor)
         return user_created
+
+
+
+def fetchVMs(building_name): #returns a list of VM IDs in the specified building
+    vm_list = []
+    try:
+        connection = serverLogin()
+        cursor = connection.cursor()
+
+        fetch_vms_query = f"SELECT VMID FROM {building_name}"
+        cursor.execute(fetch_vms_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            vm_list.append(row[0])
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if 'connection' in locals() and connection.is_connected():
+            connection.rollback()
+    finally :
+        serverLogout(connection, cursor)
+        return vm_list
+
+
+
+def fetchProducts(vm_id): #returns a list of product names and prices in the specified VM
+    product_list = []
+    try:
+        connection = serverLogin()
+        cursor = connection.cursor()
+
+        fetch_products_query = f"SELECT Name, Price FROM Products WHERE VMID = {vm_id}"
+        cursor.execute(fetch_products_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            product_list.append((row[0], row[1]))
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if 'connection' in locals() and connection.is_connected():
+            connection.rollback()
+    finally :
+        serverLogout(connection, cursor)
+        return product_list
