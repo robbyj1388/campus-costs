@@ -46,6 +46,8 @@ def vending_temp():
 @app.route('/index')
 def index():
     return render_template('index.html')
+    
+#TODO: Method to handle finding photo 
 
 # Handle registration form submission
 @app.route('/register', methods=['POST'])
