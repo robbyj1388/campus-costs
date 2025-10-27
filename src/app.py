@@ -23,7 +23,6 @@ def home():
 def login():
     username = request.form['username']
     password = request.form['password']
-
     # Check if username exists and password matches
     if username in users and users[username] == password:
         session['username'] = username  # Save user in session
@@ -38,9 +37,17 @@ def register():
     return render_template('register.html')
     
 #Load vending machine template page
-@app.route('/vending_temp')
+# Load data to vending_temp html
+@app.route('/vending_temp/data')
 def vending_temp():
-    return render_template('vending_temp.html')
+    # Pretend this is data from SQL
+    items = [
+        {"name": "Candy Bar", "price": 1.25, "available": True},
+        {"name": "Chips", "price": 1.00, "available": True},
+        {"name": "Soda", "price": 1.50, "available": False}
+    ]
+
+    return render_template('vending_temp.html', items=items)
     
 #Load main menu page
 @app.route('/index')
@@ -62,6 +69,10 @@ def register_user():
     # Add new user to the "database"
     users[username] = password
     return "<h1>Account created successfully!</h1><a href='/'>Login here</a>"
+
+
+
+
 
 # RUN THE APP
 if __name__ == '__main__':
