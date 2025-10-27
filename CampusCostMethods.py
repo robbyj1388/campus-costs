@@ -5,7 +5,7 @@ def getLogin(): #retrieves login credentials from login.env file
         with open("login.env", "r") as file:
             text = file.read().strip()
             user = text.split()
-            return (user[0], user[1])
+            return [user[0], user[1]]
     except:
         print("no login file found")
         pass
@@ -50,15 +50,24 @@ def newBuilding(building_name): #building_name is case sensitive, capitalize fir
     finally :
         serverLogout(connection, cursor)
 
-newBuilding("TEST")
-def newVM(building_name, vm_id, location_description): #vm_id: 10 charcacter limit, location_description: 100 character limit, building_name is case sensitive
+
+def newVM(building_name, room_num, location_description): #location_description: 100 character limit, building_name is case sensitive
     try:
         connection = serverLogin()
         cursor = connection.cursor()
-
-        insert_query = f"INSERT INTO {building_name} (VMID, Loction) VALUES({vm_id}, {location_description})"
+        get_abbrev_query = f"SELECT abbrev FROM Buildings WHERE Name = '{building_name}'"
+        cursor.execute(get_abbrev_query)
+        row = cursor.fetchone()
+        abbrev = row[0]
+        base_prefix = f"VM{abbrev}{room_num}"
+        count_vms_query = f"SELECT COUNT(*) FROM {building_name} WHERE VMID LIKE '{base_prefix}%'"
+        cursor.execute(count_vms_query)
+        row = cursor.fetchone()
+        vm_count = row[0]
+        vm_id = f"{base_prefix}{vm_count}"
+        insert_query = f"INSERT INTO {building_name} (VMID, Location) VALUES('{vm_id}', '{location_description}')"
         cursor.execute(insert_query)
-        update_building_query = f"UPDATE Buildings SET VMs = VMs + 1 WHERE Name = {building_name}"
+        update_building_query = f"UPDATE Buildings SET VMs = VMs + 1 WHERE Name = '{building_name}'"
         cursor.execute(update_building_query)
         connection.commit()
     except mysql.connector.Error as err:
@@ -75,7 +84,7 @@ def newProduct(product_name, price, vm_id): #product_name is case sensitive on e
         connection = serverLogin()
         cursor = connection.cursor()
 
-        insert_query = f"INSERT INTO Products (Name, Price, VMID) VALUES({product_name}, {price}, {vm_id})"
+        insert_query = f"INSERT INTO Products (Name, Price, VMID) VALUES('{product_name}', {price}, '{vm_id}')"
         cursor.execute(insert_query)
         connection.commit()
     except mysql.connector.Error as err:
@@ -91,13 +100,13 @@ def editPrice(product_name, vm_id, new_price, user_email): #edits the price of a
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_old_price_query = f"SELECT Price FROM Products WHERE Name = {product_name} AND VMID = {vm_id}"
+        get_old_price_query = f"SELECT Price FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
         cursor.execute(get_old_price_query)
         row = cursor.fetchone()
         old_price = row[0]
-        edit_price_query = f"UPDATE Products SET Price = {new_price} WHERE Name = {product_name} AND VMID = {vm_id}"
+        edit_price_query = f"UPDATE Products SET Price = {new_price} WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
         cursor.execute(edit_price_query)
-        record_edit_query = f"INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES({vm_id}, {product_name}, {new_price}, {old_price}, {user_email})"
+        record_edit_query = f"INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES('{vm_id}', '{product_name}', {new_price}, {old_price}, '{user_email}')"
         cursor.execute(record_edit_query)
         connection.commit()
     except mysql.connector.Error as err:
@@ -109,19 +118,20 @@ def editPrice(product_name, vm_id, new_price, user_email): #edits the price of a
         
 
 
-
 def reportStock(product_name, vm_id): #changes products in stock to out of stock, and vice versa
     try:
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = {product_name} AND VMID = {vm_id}"
+        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
+        cursor.execute(get_stock_status_query)
         row = cursor.fetchone()
         stock_status = row[0]
         if stock_status == 1:
-            change_stock_status_query = f"UPDATE Products SET InStock = 0 WHERE Name = {product_name} AND VMID = {vm_id}"
+            change_stock_status_query = f"UPDATE Products SET InStock = 0 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
         else:
-            change_stock_status_query = f"UPDATE Products SET InStock = 1 WHERE Name = {product_name} AND VMID = {vm_id}"
+            change_stock_status_query = f"UPDATE Products SET InStock = 1 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
+        cursor.execute(change_stock_status_query)
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -130,14 +140,14 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
     finally :
         serverLogout(connection, cursor)
 
-
+#reportStock("TestProduct2", "VMTES1210")
 
 def authenticateLogin(user_email, user_password): #password is limited to 30 characters, returns true if email and password are correct, false if otherwise
     try:
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_password_query = f"SELECT Password FROM Users WHERE Email = {user_email}"
+        get_password_query = f"SELECT Password FROM Users WHERE Email = '{user_email}'"
         cursor.execute(get_password_query)
         row = cursor.fetchone()
         password = row[0]
@@ -162,13 +172,13 @@ def newUser(user_email, user_password): #creates a new user with the specified e
         connection = serverLogin()
         cursor = connection.cursor()
 
-        check_username_query = f"SELECT COUNT(*) FROM Users WHERE Email = {user_email}"
+        check_username_query = f"SELECT COUNT(*) FROM Users WHERE Email = '{user_email}'"
         cursor.execute(check_username_query)
         row = cursor.fetchone()
         if row[0] > 0 :
             user_created = False
         else:
-            create_user_query = f"INSERT INTO Users(Email, Password) VALUES ({user_email}, {user_password})"
+            create_user_query = f"INSERT INTO Users(Email, Password) VALUES ('{user_email}', '{user_password}')"
             cursor.execute(create_user_query)
             user_created = True
         connection.commit()
@@ -210,11 +220,11 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_products_query = f"SELECT Name, Price FROM Products WHERE VMID = {vm_id}"
+        fetch_products_query = f"SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = '{vm_id}'"
         cursor.execute(fetch_products_query)
         rows = cursor.fetchall()
         for row in rows:
-            product_list.append((row[0], row[1]))
+            product_list.append((row[0], row[1], row[2]))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -223,3 +233,44 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
     finally :
         serverLogout(connection, cursor)
         return product_list
+
+
+def fetchBuildings(): #returns a list of building names and how many VMs they have
+    building_list = []
+    try:
+        connection = serverLogin()
+        cursor = connection.cursor()
+
+        fetch_buildings_query = "SELECT Name, VMs FROM Buildings"
+        cursor.execute(fetch_buildings_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            building_list.append((row[0], row[1]))
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if 'connection' in locals() and connection.is_connected():
+            connection.rollback()
+    finally :
+        serverLogout(connection, cursor)
+        return building_list
+    
+def fetchPriceEdits(): #returns a list of all price edits made, including VMID, product name, new price, old price, user email, and when the edit occured
+    price_edit_list = []
+    try:
+        connection = serverLogin()
+        cursor = connection.cursor()
+
+        fetch_price_edits_query = "SELECT VMID, ProductName, NewPrice, OldPrice, UserEmail, OccuredAt FROM PriceEdits"
+        cursor.execute(fetch_price_edits_query)
+        rows = cursor.fetchall()
+        for row in rows:
+            price_edit_list.append((row[0], row[1], row[2], row[3], row[4], row[5]))
+        connection.commit()
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+        if 'connection' in locals() and connection.is_connected():
+            connection.rollback()
+    finally :
+        serverLogout(connection, cursor)
+        return price_edit_list
