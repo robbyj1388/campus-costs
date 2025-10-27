@@ -36,6 +36,18 @@ def login():
 @app.route('/register')
 def register():
     return render_template('register.html')
+    
+#Load vending machine template page
+@app.route('/vending_temp')
+def vending_temp():
+    return render_template('vending_temp.html')
+    
+#Load main menu page
+@app.route('/index')
+def index():
+    return render_template('index.html')
+    
+#TODO: Method to handle finding photo 
 
 # Handle registration form submission
 @app.route('/register', methods=['POST'])
@@ -53,4 +65,4 @@ def register_user():
 
 # RUN THE APP
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=5000, debug=True)
+    app.run(debug=True)

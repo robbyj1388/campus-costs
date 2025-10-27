@@ -1,0 +1,81 @@
+/*CSS for Vending Machines for Team Software Proj., Campus Cost */
+
+@charset "UTF-8";
+
+.content{
+	display: flex;
+	
+	
+}
+
+
+.sidebar{
+	flex-basis: 25%;
+	border: thin, solid, black;
+	display: flex;
+	flex-direction: column;
+	text-align: center;
+	
+	
+}
+
+.side_nav{
+	border: thin, solid, black;
+	font-size: 125%;
+}
+
+
+.sidebar_nav_header{
+	border: thin, solid, black;
+	font-size: 100%;
+	
+}
+
+
+
+.mainbox{
+	display: flex;
+	flex-direction: column;
+	border: thin, solid, black;
+	flex-basis: 75%;
+	
+}
+
+.mainbox_header{
+	border: thin, solid, black;
+	display: flex;
+	
+}
+
+.mainbox_header_items{
+	display: flex;
+	flex-direction: row;
+	flex-basis: 25%;
+	margin-left: 10%;
+	margin-right: 10%;
+	text-align: center;
+	
+	
+}
+
+ul{
+	font-size: 150%;
+	
+}
+
+table{ /*TODO: Add Scrollbar capabilities into CSS for only table items*/
+	text-align: center;
+	font-size: 150%;
+}
+
+th{
+	border: thin, solid, black;
+	
+}
+
+
+img{
+	width: 75%;
+	align-self: center;
+	
+}
