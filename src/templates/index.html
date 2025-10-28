@@ -30,11 +30,27 @@
 					
 				</ul>
 			</section>
+			
+			<section> <!--Section for testing buildings being dynamically displayed-->
+				
+				<ul>
+
+					{% for item in blding %}
+					
+						<li> {{ blding[item][:] }} </li> <!--TODO: Working on getting buildings selectable-->
+				
+					{% endfor %}
+				</ul>
+			
+			</section>
 		
 		</main>
 	
 	</body>
 	
+	<script><!--TODO: Basic javascript to handle dynamic data?-->
+	
+	</script>
 	
 	<footer>
 	

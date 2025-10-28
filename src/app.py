@@ -47,7 +47,8 @@ def vending_temp():
 #Load main menu page
 @app.route('/index')
 def index():
-    return render_template('index.html')
+   
+    return render_template('index.html', blding = fetchBuildings()) #TODO: Make a working information pass to html
     
 #TODO: Method to handle finding photo 
 
@@ -68,7 +69,7 @@ def register_user():
 # RUN THE APP
 if __name__ == '__main__':
     app.run(debug=True)
-    serverLogin()
+    #Removed serverLogin() call that was here, unsure if we need it during initialization
     
     
     
