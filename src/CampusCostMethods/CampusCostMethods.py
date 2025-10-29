@@ -1,18 +1,30 @@
 import mysql.connector #pip install mysql-connector-python
+import os
 
 def getLogin(): #retrieves login credentials from login.env file
+    # Get the folder where this script lives
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct full path to login.env
+    login_file = os.path.join(BASE_DIR, "login.env")
+    
+    # read text from login file for database password
     try:
-        with open("./login.env", "r") as file:
+        with open(login_file, "r") as file:
             text = file.read().strip()
             user = text.split()
             return [user[0], user[1]]
     except:
-        print("no login file found")
-        pass
+        print("ERROR: NO LOGIN FILE FOUND 404")
+        return None
 
 
-def serverLogin(): #connects to the database, returns the connection object, all other methods require this to function
-    username, password = getLogin()
+def serverLogin(): # connects to the database, returns the connection object, all other methods require this to function
+    login = getLogin()
+    if login is None:
+        print("ERROR: Login is NONE")
+    username, password = login
+
     try:
         connection = mysql.connector.connect(
             host = "classdb.it.mtu.edu",
@@ -144,51 +156,69 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
 
 def authenticateLogin(user_email, user_password): #password is limited to 30 characters, returns true if email and password are correct, false if otherwise
     try:
+        # Connect to the database
         connection = serverLogin()
         cursor = connection.cursor()
-
-        get_password_query = f"SELECT Password FROM Users WHERE Email = '{user_email}'"
-        cursor.execute(get_password_query)
-        row = cursor.fetchone()
-        password = row[0]
         
-        connection.commit()
+        # Use a parameterized query to prevent SQL injection
+        query = "SELECT Password FROM Users WHERE Email = %s"
+        cursor.execute(query, (user_email,)) # , because must be a tuple
+
+        # Fetch the first row from the results (one user per email)
+        row = cursor.fetchone()
+
+        # If no user found 
+        if row is None:
+            return False
+
+        password = row[0]
+
+        # check password
+        return user_password == password
+
     except mysql.connector.Error as err:
         print(f"Error: {err}")
+
+        # Rollback any changes if the connection is active
         if 'connection' in locals() and connection.is_connected():
             connection.rollback()
-    finally :
-        serverLogout(connection, cursor)
-        
-        if user_password == password:
-            return True
-        else:
-            return False
+
+        return False
+
+    finally:
+        # clean up connections
+        if 'connection' in locals() and 'cursor' in locals():
+            serverLogout(connection, cursor)
 
 
 
 def newUser(user_email, user_password): #creates a new user with the specified email and password, returns true if user created, false if email already exists
     try:
+        # Connect to database
         connection = serverLogin()
         cursor = connection.cursor()
-
-        check_username_query = f"SELECT COUNT(*) FROM Users WHERE Email = '{user_email}'"
-        cursor.execute(check_username_query)
+        
+        # Use a parameterized query to prevent SQL injection
+        user_count_query = "SELECT COUNT(*) FROM Users WHERE Email = %s"
+        cursor.execute(user_count_query, (user_email,)) # , because must be a tuple
+    
+        # if user already exists then return False
         row = cursor.fetchone()
         if row[0] > 0 :
-            user_created = False
+            return False
         else:
-            create_user_query = f"INSERT INTO Users(Email, Password) VALUES ('{user_email}', '{user_password}')"
-            cursor.execute(create_user_query)
-            user_created = True
+            print("Create")
+            create_user_query = f"INSERT INTO Users(Email, Password) VALUES (%s, %s)"
+            cursor.execute(create_user_query, (user_email, user_password))
         connection.commit()
+        print("comm")
+        return True; # user has been created
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if 'connection' in locals() and connection.is_connected():
             connection.rollback()
     finally :
         serverLogout(connection, cursor)
-        return user_created
 
 
 
