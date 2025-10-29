@@ -1,4 +1,4 @@
-import mysql.connector
+import mysql.connector #pip install mysql-connector-python
 
 def getLogin(): #retrieves login credentials from login.env file
     try:
@@ -215,7 +215,6 @@ def fetchVMs(building_name): #returns a list of VM IDs in the specified building
 
 
 def fetchProducts(vm_id): #returns a list of product names and prices in the specified VM
-    product_list = []
     try:
         connection = serverLogin()
         cursor = connection.cursor()
@@ -223,8 +222,6 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         fetch_products_query = f"SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = '{vm_id}'"
         cursor.execute(fetch_products_query)
         rows = cursor.fetchall()
-        for row in rows:
-            product_list.append((row[0], row[1], row[2]))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -232,9 +229,9 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
             connection.rollback()
     finally :
         serverLogout(connection, cursor)
-        return product_list
+        return rows
 
-
+print(fetchProducts("VMTES1210"))
 def fetchBuildings(): #returns a list of building names and how many VMs they have
     building_list = []
     try:

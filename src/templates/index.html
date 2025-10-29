@@ -8,7 +8,7 @@
 
 	<title>Campus Cost Homepage</title>
 	<meta charset = "UTF-8">
-	<link rel="stylesheet" href="{{ url_for('static', filename='tspProj_home.css') }}">
+	<link rel ="stylesheet" href = "{{ url_for('static', filename='tspProj_home.css') }}">
 
 	</head>
 	
@@ -18,13 +18,13 @@
 			<section>
 				<h1 class = "page_header">Campus Cost </h1>
 				<nav class = "page_nav">
-					<a href = ""> LOGOUT</a><!-- TODO: Logout button needs implementation -->
+					<a href = "/">LOGOUT</a><!-- TODO: Logout button needs implementation -->
 				</nav>
 				
 			</section>
 			<section id = "page_content">
 				<ul>
-					<li>Vending Machine 1.</li> <!--TODO: Make an existing machine-->
+					<li> <a href = "{{ url_for('vending_temp') }}">Vending Machine 1.</a> </li> <!--TODO: Make an existing machine-->
 				
 					<li>Vending Machine 2.</li> <!--TODO: Make an existing machine-->
 					
