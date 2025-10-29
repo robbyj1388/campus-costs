@@ -231,10 +231,6 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         serverLogout(connection, cursor)
         return rows
 
-<<<<<<< HEAD
-
-=======
->>>>>>> robby
 def fetchBuildings(): #returns a list of building names and how many VMs they have
     building_list = []
     try:
