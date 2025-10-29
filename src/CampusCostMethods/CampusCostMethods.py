@@ -162,7 +162,7 @@ def authenticateLogin(user_email, user_password): #password is limited to 30 cha
         
         # Use a parameterized query to prevent SQL injection
         query = "SELECT Password FROM Users WHERE Email = %s"
-        cursor.execute(query, (user_email,))
+        cursor.execute(query, (user_email,)) # , because must be a tuple
 
         # Fetch the first row from the results (one user per email)
         row = cursor.fetchone()
@@ -194,26 +194,31 @@ def authenticateLogin(user_email, user_password): #password is limited to 30 cha
 
 def newUser(user_email, user_password): #creates a new user with the specified email and password, returns true if user created, false if email already exists
     try:
+        # Connect to database
         connection = serverLogin()
         cursor = connection.cursor()
-
-        check_username_query = f"SELECT COUNT(*) FROM Users WHERE Email = '{user_email}'"
-        cursor.execute(check_username_query)
+        
+        # Use a parameterized query to prevent SQL injection
+        user_count_query = "SELECT COUNT(*) FROM Users WHERE Email = %s"
+        cursor.execute(user_count_query, (user_email,)) # , because must be a tuple
+    
+        # if user already exists then return False
         row = cursor.fetchone()
         if row[0] > 0 :
-            user_created = False
+            return False
         else:
-            create_user_query = f"INSERT INTO Users(Email, Password) VALUES ('{user_email}', '{user_password}')"
-            cursor.execute(create_user_query)
-            user_created = True
+            print("Create")
+            create_user_query = f"INSERT INTO Users(Email, Password) VALUES (%s, %s)"
+            cursor.execute(create_user_query, (user_email, user_password))
         connection.commit()
+        print("comm")
+        return True; # user has been created
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if 'connection' in locals() and connection.is_connected():
             connection.rollback()
     finally :
         serverLogout(connection, cursor)
-        return user_created
 
 
 

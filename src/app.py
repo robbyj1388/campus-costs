@@ -62,14 +62,11 @@ def register_user():
     username = request.form['username']
     password = request.form['password']
     
-    #Implement database
-    # # Check if username already exists
-    # if username in users:
-    #     return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
-
-    # # Add new user to the "database"
-    # users[username] = password
-    # return "<h1>Account created successfully!</h1><a href='/'>Login here</a>"
+    # Check if user already exists, if not newUser adds to database
+    if not CampusCostMethods.newUser(username,password): 
+        return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
+    else:
+        return "<h1>Account created successfully!</h1><a href='/'>Login here</a>"
 
 
 
