@@ -2,7 +2,7 @@ import mysql.connector #pip install mysql-connector-python
 
 def getLogin(): #retrieves login credentials from login.env file
     try:
-        with open("login.env", "r") as file:
+        with open("./login.env", "r") as file:
             text = file.read().strip()
             user = text.split()
             return [user[0], user[1]]
@@ -231,7 +231,6 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         serverLogout(connection, cursor)
         return rows
 
-print(fetchProducts("VMTES1210"))
 def fetchBuildings(): #returns a list of building names and how many VMs they have
     building_list = []
     try:
