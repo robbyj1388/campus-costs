@@ -49,25 +49,15 @@
 					
 					
 				</section>
-				<table> <!--TODO: Make compatable with backend code, in order to grab data from database-->
-					<tr>
-						<th>Item</th>
-						<th>Price</th>
-						<th>Available?</th>
-					
-					</tr>
-					<tr>
-						<td>Candy Bar</td>
-						<td>$100.00</td>
-						<td>Yes</td>
-						
-					</tr>
-					<tr>
-						<td>Dr. Pib Soda</td>
-						<td>$2.00</td>
-						<td>No</td>
-						
-					</tr>
+				<table>
+            <--! for loop for item in items, load in app.py -->  
+            {% for item in items %}
+            <tr>
+                <td>{{ item.name }}</td>
+                <td>${{ "%.2f"|format(item.price) }}</td>
+                <td>{{ "Yes" if item.available else "No" }}</td>
+            </tr>
+            {% endfor %}
 				
 				</table>
 				
