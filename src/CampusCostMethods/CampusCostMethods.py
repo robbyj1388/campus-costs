@@ -211,7 +211,6 @@ def newUser(user_email, user_password): #creates a new user with the specified e
             create_user_query = f"INSERT INTO Users(Email, Password) VALUES (%s, %s)"
             cursor.execute(create_user_query, (user_email, user_password))
         connection.commit()
-        print("comm")
         return True; # user has been created
     except mysql.connector.Error as err:
         print(f"Error: {err}")
