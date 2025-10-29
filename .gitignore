@@ -7,7 +7,12 @@ __pycache__/
 venv/
 ENV/
 env/
+<<<<<<< Updated upstream
 .env
+=======
+*.env
+
+>>>>>>> Stashed changes
 # VS Code settings
 .vscode/
 
