@@ -140,7 +140,7 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
     finally :
         serverLogout(connection, cursor)
 
-#reportStock("TestProduct2", "VMTES1210")
+
 
 def authenticateLogin(user_email, user_password): #password is limited to 30 characters, returns true if email and password are correct, false if otherwise
     try:
@@ -231,7 +231,7 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         serverLogout(connection, cursor)
         return rows
 
-print(fetchProducts("VMTES1210"))
+
 def fetchBuildings(): #returns a list of building names and how many VMs they have
     building_list = []
     try:
