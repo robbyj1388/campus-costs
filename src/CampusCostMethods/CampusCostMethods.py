@@ -52,8 +52,8 @@ def newBuilding(building_name): #building_name is case sensitive, capitalize fir
         
         val_insert = (building_name,)
         cursor.execute("INSERT INTO Buildings (Name) VALUES (%s)", val_insert)
-        create_table_query = f"CREATE TABLE IF NOT EXISTS {building_name} LIKE BuildingTemplate"
-        cursor.execute(create_table_query)
+        create_table_query = "CREATE TABLE IF NOT EXISTS %s LIKE BuildingTemplate"
+        cursor.execute(create_table_query, (building_name,))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -67,20 +67,20 @@ def newVM(building_name, room_num, location_description): #location_description:
     try:
         connection = serverLogin()
         cursor = connection.cursor()
-        get_abbrev_query = f"SELECT abbrev FROM Buildings WHERE Name = '{building_name}'"
-        cursor.execute(get_abbrev_query)
+        get_abbrev_query = "SELECT abbrev FROM Buildings WHERE Name = %s"
+        cursor.execute(get_abbrev_query, (building_name,))
         row = cursor.fetchone()
         abbrev = row[0]
         base_prefix = f"VM{abbrev}{room_num}"
-        count_vms_query = f"SELECT COUNT(*) FROM {building_name} WHERE VMID LIKE '{base_prefix}%'"
-        cursor.execute(count_vms_query)
+        count_vms_query = "SELECT COUNT(*) FROM %s WHERE VMID LIKE %s"
+        cursor.execute(count_vms_query, (building_name, f"{base_prefix}%"))
         row = cursor.fetchone()
         vm_count = row[0]
         vm_id = f"{base_prefix}{vm_count}"
-        insert_query = f"INSERT INTO {building_name} (VMID, Location) VALUES('{vm_id}', '{location_description}')"
-        cursor.execute(insert_query)
-        update_building_query = f"UPDATE Buildings SET VMs = VMs + 1 WHERE Name = '{building_name}'"
-        cursor.execute(update_building_query)
+        insert_query = "INSERT INTO %s (VMID, Location) VALUES(%s, %s)"
+        cursor.execute(insert_query, (building_name, vm_id, location_description))
+        update_building_query = "UPDATE Buildings SET VMs = VMs + 1 WHERE Name = %s"
+        cursor.execute(update_building_query, (building_name,))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -96,8 +96,8 @@ def newProduct(product_name, price, vm_id): #product_name is case sensitive on e
         connection = serverLogin()
         cursor = connection.cursor()
 
-        insert_query = f"INSERT INTO Products (Name, Price, VMID) VALUES('{product_name}', {price}, '{vm_id}')"
-        cursor.execute(insert_query)
+        insert_query = "INSERT INTO Products (Name, Price, VMID) VALUES(%s, %s, %s)"
+        cursor.execute(insert_query, (product_name, price, vm_id))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -112,14 +112,14 @@ def editPrice(product_name, vm_id, new_price, user_email): #edits the price of a
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_old_price_query = f"SELECT Price FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(get_old_price_query)
+        get_old_price_query = "SELECT Price FROM Products WHERE Name = %s AND VMID = %s"
+        cursor.execute(get_old_price_query, (product_name, vm_id))
         row = cursor.fetchone()
         old_price = row[0]
-        edit_price_query = f"UPDATE Products SET Price = {new_price} WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(edit_price_query)
-        record_edit_query = f"INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES('{vm_id}', '{product_name}', {new_price}, {old_price}, '{user_email}')"
-        cursor.execute(record_edit_query)
+        edit_price_query = "UPDATE Products SET Price = %s WHERE Name = %s AND VMID = %s"
+        cursor.execute(edit_price_query, (new_price, product_name, vm_id))
+        record_edit_query = "INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES(%s, %s, %s, %s, %s)"
+        cursor.execute(record_edit_query, (vm_id, product_name, new_price, old_price, user_email))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -135,15 +135,15 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(get_stock_status_query)
+        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = %s AND VMID = %s"
+        cursor.execute(get_stock_status_query, (product_name, vm_id))
         row = cursor.fetchone()
         stock_status = row[0]
         if stock_status == 1:
-            change_stock_status_query = f"UPDATE Products SET InStock = 0 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
+            change_stock_status_query = "UPDATE Products SET InStock = 0 WHERE Name = %s AND VMID = %s"
         else:
-            change_stock_status_query = f"UPDATE Products SET InStock = 1 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(change_stock_status_query)
+            change_stock_status_query = "UPDATE Products SET InStock = 1 WHERE Name = %s AND VMID = %s"
+        cursor.execute(change_stock_status_query, (product_name, vm_id))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -161,20 +161,17 @@ def authenticateLogin(user_email, user_password): #password is limited to 30 cha
         cursor = connection.cursor()
         
         # Use a parameterized query to prevent SQL injection
-        query = "SELECT Password FROM Users WHERE Email = %s"
-        cursor.execute(query, (user_email,)) # , because must be a tuple
+        query = "SELECT * FROM Users WHERE Email = %s AND Password = SHA2(%s, 256)"
+        cursor.execute(query, (user_email, user_password))
 
-        # Fetch the first row from the results (one user per email)
-        row = cursor.fetchone()
+        # Fetch the results
+        rows = cursor.fetchall()
 
-        # If no user found 
-        if row is None:
+        # If matching credentials found, return True, else return False
+        if rows:
+            return True
+        else:
             return False
-
-        password = row[0]
-
-        # check password
-        return user_password == password
 
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -208,7 +205,7 @@ def newUser(user_email, user_password): #creates a new user with the specified e
             return False
         else:
             print("Create")
-            create_user_query = f"INSERT INTO Users(Email, Password) VALUES (%s, %s)"
+            create_user_query = "INSERT INTO Users(Email, Password) VALUES (%s, SHA2(%s, 256))"
             cursor.execute(create_user_query, (user_email, user_password))
         connection.commit()
         return True; # user has been created
@@ -227,8 +224,8 @@ def fetchVMs(building_name): #returns a list of VM IDs in the specified building
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_vms_query = f"SELECT VMID FROM {building_name}"
-        cursor.execute(fetch_vms_query)
+        fetch_vms_query = "SELECT VMID FROM %s"
+        cursor.execute(fetch_vms_query, (building_name,))
         rows = cursor.fetchall()
         for row in rows:
             vm_list.append(row[0])
@@ -248,8 +245,8 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_products_query = f"SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = '{vm_id}'"
-        cursor.execute(fetch_products_query)
+        fetch_products_query = "SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = %s"
+        cursor.execute(fetch_products_query, (vm_id,))
         rows = cursor.fetchall()
         connection.commit()
     except mysql.connector.Error as err:
