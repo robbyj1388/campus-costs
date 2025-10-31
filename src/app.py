@@ -50,9 +50,13 @@ def vending_temp():
     return render_template('vending_temp.html', items=items)
     
 #Load main menu page
-@app.route('/index')
+@app.route('/index', methods = ['GET'])
 def index():
-    return render_template('index.html')
+    buildings = []
+    buildings = CampusCostMethods.fetchBuildings()
+    
+    
+    return render_template('index.html', blding = buildings)
     
 #TODO: Method to handle finding photo 
 
