@@ -51,14 +51,14 @@
 				</section>
 				<table>
             <!-- for loop for item in items, load in app.py -->  
-            {% for item in items %}
-            <tr>
-                <td>{{ item.name }}</td>
-                <td>${{ "%.2f"|format(item.price) }}</td>
-                <td>{{ "Yes" if item.available else "No" }}</td>
-            </tr>
-            {% endfor %}
-				
+					{% for item in items %}
+					<tr>
+						<td>{{ item.name }}</td>
+						<td>${{ "%.2f"|format(item.price) }}</td>
+						<td>{{ "Yes" if item.available else "No" }}</td>
+					</tr>
+					{% endfor %}
+						
 				</table>
 				
 			</section>
