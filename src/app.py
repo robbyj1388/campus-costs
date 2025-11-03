@@ -26,7 +26,7 @@ def login():
     # Check if username exists and password matches
     if CampusCostMethods.authenticateLogin(username,password): 
         session['username'] = username  # Save user in session
-        return render_template('index.html', username=username)
+        return index() 
     else:
         # Invalid login
         return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
