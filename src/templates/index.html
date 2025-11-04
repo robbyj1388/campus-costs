@@ -30,6 +30,19 @@
 					
 				</ul>
 			</section>
+			
+			<section> <!--Section for testing buildings being dynamically displayed-->
+				
+				<ul>
+
+					{% for item in blding %}
+					
+						<li> {{ item[0] }} </li> <!--TODO: Working on getting buildings selectable-->
+				
+					{% endfor %}
+				</ul>
+			
+			</section>
 		
 		</main>
 	
