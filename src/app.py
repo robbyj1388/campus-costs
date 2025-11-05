@@ -41,12 +41,8 @@ def register():
 @app.route('/vending_temp/data')
 def vending_temp():
     # Pretend this is data from SQL
-    items = [
-        {"name": "Candy Bar", "price": 1.25, "available": True},
-        {"name": "Chips", "price": 1.00, "available": True},
-        {"name": "Soda", "price": 1.50, "available": False}
-    ]
-
+    items = CampusCostMethods.fetchProducts("VMTES1210");
+    
     return render_template('vending_temp.html', items=items)
     
 #Load main menu page

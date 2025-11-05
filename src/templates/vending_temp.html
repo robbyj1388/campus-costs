@@ -53,9 +53,9 @@
             <!-- for loop for item in items, load in app.py -->  
             {% for item in items %}
             <tr>
-                <td>{{ item.name }}</td>
-                <td>${{ "%.2f"|format(item.price) }}</td>
-                <td>{{ "Yes" if item.available else "No" }}</td>
+                <td>{{ item[0] }}</td>
+                <td>${{ "%.2f"|format(item[1]) }}</td>
+                <td>{{ "Yes" if item[2] == "In Stock" else "No" }}</td>
             </tr>
             {% endfor %}
 				
