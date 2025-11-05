@@ -26,7 +26,7 @@ def login():
     # Check if username exists and password matches
     if CampusCostMethods.authenticateLogin(username,password): 
         session['username'] = username  # Save user in session
-        return index() 
+        return redirect(url_for('index'))
     else:
         # Invalid login
         return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
@@ -38,21 +38,25 @@ def register():
     
 #Load vending machine template page
 # Load data to vending_temp html
-@app.route('/vending_temp/data')
-def vending_temp():
-    # Pretend this is data from SQL
+@app.route('/vending_temp/<string:building_name>')
+def vending_temp(building_name):
+    # Get products from vending machine id
     items = CampusCostMethods.fetchProducts("VMTES1210");
     
-    return render_template('vending_temp.html', items=items)
+    return render_template('vending_temp.html', items=items, building_name=building_name)
     
-#Load main menu page
+# Load main menu page
 @app.route('/index')
 def index():
-    buildings = []
+    # Check if the user is logged in
+    if 'username' not in session:
+        return redirect(url_for('home'))  # Redirect to login page if not logged in
+
+    # Fetch buildings from CampusCostMethods
     buildings = CampusCostMethods.fetchBuildings()
-    
-    
-    return render_template('index.html', blding = buildings)
+    print(buildings)
+    # Render index.html with buildings data
+    return render_template('index.html', blding=buildings)
     
 #TODO: Method to handle finding photo 
 
