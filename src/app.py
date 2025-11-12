@@ -40,6 +40,10 @@ def register():
 # Load data to vending_temp html
 @app.route('/vending_temp/<string:building_name>')
 def vending_temp(building_name):
+    match building_name:
+        case 'Wads':
+            print("Wads")
+    
     # Get products from vending machine id
     items = CampusCostMethods.fetchProducts("VMTES1210");
     
