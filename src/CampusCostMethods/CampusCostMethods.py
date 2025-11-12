@@ -68,7 +68,7 @@ def newBuilding(building_name): #building_name is case sensitive, capitalize fir
         serverLogout(connection, cursor)
 
 
-def newVM(building_name, room_num, location_description): #location_description: 100 character limit, building_name is case sensitive
+def newVM(building_name, room_num): #building_name is case sensitive
     try:
         connection = serverLogin()
         cursor = connection.cursor()
@@ -83,7 +83,7 @@ def newVM(building_name, room_num, location_description): #location_description:
         vm_count = row[0]
         vm_id = f"{base_prefix}{vm_count}"
         insert_query = "INSERT INTO %s (VMID, Location) VALUES(%s, %s)"
-        cursor.execute(insert_query, (building_name, vm_id, location_description))
+        cursor.execute(insert_query, (building_name, vm_id, room_num))
         update_building_query = "UPDATE Buildings SET VMs = VMs + 1 WHERE Name = %s"
         cursor.execute(update_building_query, (building_name,))
         connection.commit()
