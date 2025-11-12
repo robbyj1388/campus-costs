@@ -6,7 +6,12 @@ def getLogin(): #retrieves login credentials from login.env file
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
     # Construct full path to login.env
-    login_file = os.path.join(BASE_DIR, "login.env")
+    login_file = None
+    try:    
+        login_file = os.path.join(BASE_DIR, "login.env")
+    except:
+        print("ERROR: NO LOGIN FILE FOUND")
+    
     
     # read text from login file for database password
     try:
