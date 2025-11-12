@@ -22,15 +22,30 @@
 				</nav>
 				
 			</section>
+			
+			<section> <!--Section for testing buildings being dynamically displayed-->
+				
+				<ul>
+          {% for building in blding %}
+            <li>
+              <a href="{{ url_for('vending_temp', building_name=building[0]) }}">
+                {{ building[0]}}
+              </a>
+            </li>
+          {% endfor %}
+				</ul>
+			
+			</section>
+		
 			<section id = "page_content">
 				<ul>
-					<li> <a href = "{{ url_for('vending_temp') }}">Vending Machine 1.</a> </li> <!--TODO: Make an existing machine-->
+          <li> <a href="{{ url_for('vending_temp', building_name='VMTES1210') }}">Vending Machine 1.</a> </li>
 				
 					<li>Vending Machine 2.</li> <!--TODO: Make an existing machine-->
 					
 				</ul>
 			</section>
-		
+      
 		</main>
 	
 	</body>

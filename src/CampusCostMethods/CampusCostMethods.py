@@ -1,18 +1,30 @@
 import mysql.connector #pip install mysql-connector-python
+import os
 
 def getLogin(): #retrieves login credentials from login.env file
+    # Get the folder where this script lives
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+    # Construct full path to login.env
+    login_file = os.path.join(BASE_DIR, "login.env")
+    
+    # read text from login file for database password
     try:
-        with open("login.env", "r") as file:
+        with open(login_file, "r") as file:
             text = file.read().strip()
             user = text.split()
             return [user[0], user[1]]
     except:
-        print("no login file found")
-        pass
+        print("ERROR: NO LOGIN FILE FOUND 404")
+        return None
 
 
-def serverLogin(): #connects to the database, returns the connection object, all other methods require this to function
-    username, password = getLogin()
+def serverLogin(): # connects to the database, returns the connection object, all other methods require this to function
+    login = getLogin()
+    if login is None:
+        print("ERROR: Login is NONE")
+    username, password = login
+
     try:
         connection = mysql.connector.connect(
             host = "classdb.it.mtu.edu",
@@ -40,8 +52,8 @@ def newBuilding(building_name): #building_name is case sensitive, capitalize fir
         
         val_insert = (building_name,)
         cursor.execute("INSERT INTO Buildings (Name) VALUES (%s)", val_insert)
-        create_table_query = f"CREATE TABLE IF NOT EXISTS {building_name} LIKE BuildingTemplate"
-        cursor.execute(create_table_query)
+        create_table_query = "CREATE TABLE IF NOT EXISTS %s LIKE BuildingTemplate"
+        cursor.execute(create_table_query, (building_name,))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -55,20 +67,20 @@ def newVM(building_name, room_num, location_description): #location_description:
     try:
         connection = serverLogin()
         cursor = connection.cursor()
-        get_abbrev_query = f"SELECT abbrev FROM Buildings WHERE Name = '{building_name}'"
-        cursor.execute(get_abbrev_query)
+        get_abbrev_query = "SELECT abbrev FROM Buildings WHERE Name = %s"
+        cursor.execute(get_abbrev_query, (building_name,))
         row = cursor.fetchone()
         abbrev = row[0]
         base_prefix = f"VM{abbrev}{room_num}"
-        count_vms_query = f"SELECT COUNT(*) FROM {building_name} WHERE VMID LIKE '{base_prefix}%'"
-        cursor.execute(count_vms_query)
+        count_vms_query = "SELECT COUNT(*) FROM %s WHERE VMID LIKE %s"
+        cursor.execute(count_vms_query, (building_name, f"{base_prefix}%"))
         row = cursor.fetchone()
         vm_count = row[0]
         vm_id = f"{base_prefix}{vm_count}"
-        insert_query = f"INSERT INTO {building_name} (VMID, Location) VALUES('{vm_id}', '{location_description}')"
-        cursor.execute(insert_query)
-        update_building_query = f"UPDATE Buildings SET VMs = VMs + 1 WHERE Name = '{building_name}'"
-        cursor.execute(update_building_query)
+        insert_query = "INSERT INTO %s (VMID, Location) VALUES(%s, %s)"
+        cursor.execute(insert_query, (building_name, vm_id, location_description))
+        update_building_query = "UPDATE Buildings SET VMs = VMs + 1 WHERE Name = %s"
+        cursor.execute(update_building_query, (building_name,))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -84,8 +96,8 @@ def newProduct(product_name, price, vm_id): #product_name is case sensitive on e
         connection = serverLogin()
         cursor = connection.cursor()
 
-        insert_query = f"INSERT INTO Products (Name, Price, VMID) VALUES('{product_name}', {price}, '{vm_id}')"
-        cursor.execute(insert_query)
+        insert_query = "INSERT INTO Products (Name, Price, VMID) VALUES(%s, %s, %s)"
+        cursor.execute(insert_query, (product_name, price, vm_id))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -100,14 +112,14 @@ def editPrice(product_name, vm_id, new_price, user_email): #edits the price of a
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_old_price_query = f"SELECT Price FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(get_old_price_query)
+        get_old_price_query = "SELECT Price FROM Products WHERE Name = %s AND VMID = %s"
+        cursor.execute(get_old_price_query, (product_name, vm_id))
         row = cursor.fetchone()
         old_price = row[0]
-        edit_price_query = f"UPDATE Products SET Price = {new_price} WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(edit_price_query)
-        record_edit_query = f"INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES('{vm_id}', '{product_name}', {new_price}, {old_price}, '{user_email}')"
-        cursor.execute(record_edit_query)
+        edit_price_query = "UPDATE Products SET Price = %s WHERE Name = %s AND VMID = %s"
+        cursor.execute(edit_price_query, (new_price, product_name, vm_id))
+        record_edit_query = "INSERT INTO PriceEdits(VMID, ProductName, NewPrice, OldPrice, UserEmail) VALUES(%s, %s, %s, %s, %s)"
+        cursor.execute(record_edit_query, (vm_id, product_name, new_price, old_price, user_email))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -123,15 +135,15 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
         connection = serverLogin()
         cursor = connection.cursor()
 
-        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(get_stock_status_query)
+        get_stock_status_query = f"SELECT InStock FROM Products WHERE Name = %s AND VMID = %s"
+        cursor.execute(get_stock_status_query, (product_name, vm_id))
         row = cursor.fetchone()
         stock_status = row[0]
         if stock_status == 1:
-            change_stock_status_query = f"UPDATE Products SET InStock = 0 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
+            change_stock_status_query = "UPDATE Products SET InStock = 0 WHERE Name = %s AND VMID = %s"
         else:
-            change_stock_status_query = f"UPDATE Products SET InStock = 1 WHERE Name = '{product_name}' AND VMID = '{vm_id}'"
-        cursor.execute(change_stock_status_query)
+            change_stock_status_query = "UPDATE Products SET InStock = 1 WHERE Name = %s AND VMID = %s"
+        cursor.execute(change_stock_status_query, (product_name, vm_id))
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -140,55 +152,69 @@ def reportStock(product_name, vm_id): #changes products in stock to out of stock
     finally :
         serverLogout(connection, cursor)
 
-#reportStock("TestProduct2", "VMTES1210")
+
 
 def authenticateLogin(user_email, user_password): #password is limited to 30 characters, returns true if email and password are correct, false if otherwise
     try:
+        # Connect to the database
         connection = serverLogin()
         cursor = connection.cursor()
+        
+        # Use a parameterized query to prevent SQL injection
+        query = "SELECT * FROM Users WHERE Email = %s AND Password = SHA2(%s, 256)"
+        cursor.execute(query, (user_email, user_password))
 
-        get_password_query = f"SELECT Password FROM Users WHERE Email = '{user_email}'"
-        cursor.execute(get_password_query)
-        row = cursor.fetchone()
-        password = row[0]
-        
-        connection.commit()
-    except mysql.connector.Error as err:
-        print(f"Error: {err}")
-        if 'connection' in locals() and connection.is_connected():
-            connection.rollback()
-    finally :
-        serverLogout(connection, cursor)
-        
-        if user_password == password:
+        # Fetch the results
+        rows = cursor.fetchall()
+
+        # If matching credentials found, return True, else return False
+        if rows:
             return True
         else:
             return False
+
+    except mysql.connector.Error as err:
+        print(f"Error: {err}")
+
+        # Rollback any changes if the connection is active
+        if 'connection' in locals() and connection.is_connected():
+            connection.rollback()
+
+        return False
+
+    finally:
+        # clean up connections
+        if 'connection' in locals() and 'cursor' in locals():
+            serverLogout(connection, cursor)
 
 
 
 def newUser(user_email, user_password): #creates a new user with the specified email and password, returns true if user created, false if email already exists
     try:
+        # Connect to database
         connection = serverLogin()
         cursor = connection.cursor()
-
-        check_username_query = f"SELECT COUNT(*) FROM Users WHERE Email = '{user_email}'"
-        cursor.execute(check_username_query)
+        
+        # Use a parameterized query to prevent SQL injection
+        user_count_query = "SELECT COUNT(*) FROM Users WHERE Email = %s"
+        cursor.execute(user_count_query, (user_email,)) # , because must be a tuple
+    
+        # if user already exists then return False
         row = cursor.fetchone()
         if row[0] > 0 :
-            user_created = False
+            return False
         else:
-            create_user_query = f"INSERT INTO Users(Email, Password) VALUES ('{user_email}', '{user_password}')"
-            cursor.execute(create_user_query)
-            user_created = True
+            print("Create")
+            create_user_query = "INSERT INTO Users(Email, Password) VALUES (%s, SHA2(%s, 256))"
+            cursor.execute(create_user_query, (user_email, user_password))
         connection.commit()
+        return True; # user has been created
     except mysql.connector.Error as err:
         print(f"Error: {err}")
         if 'connection' in locals() and connection.is_connected():
             connection.rollback()
     finally :
         serverLogout(connection, cursor)
-        return user_created
 
 
 
@@ -198,8 +224,8 @@ def fetchVMs(building_name): #returns a list of VM IDs in the specified building
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_vms_query = f"SELECT VMID FROM {building_name}"
-        cursor.execute(fetch_vms_query)
+        fetch_vms_query = "SELECT VMID FROM %s"
+        cursor.execute(fetch_vms_query, (building_name,))
         rows = cursor.fetchall()
         for row in rows:
             vm_list.append(row[0])
@@ -219,8 +245,8 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_products_query = f"SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = '{vm_id}'"
-        cursor.execute(fetch_products_query)
+        fetch_products_query = "SELECT Name, Price, CASE InStock WHEN 1 THEN 'In Stock' ELSE 'Out of Stock' END FROM Products WHERE VMID = %s"
+        cursor.execute(fetch_products_query, (vm_id,))
         rows = cursor.fetchall()
         connection.commit()
     except mysql.connector.Error as err:
@@ -231,7 +257,6 @@ def fetchProducts(vm_id): #returns a list of product names and prices in the spe
         serverLogout(connection, cursor)
         return rows
 
-print(fetchProducts("VMTES1210"))
 def fetchBuildings(): #returns a list of building names and how many VMs they have
     building_list = []
     try:
