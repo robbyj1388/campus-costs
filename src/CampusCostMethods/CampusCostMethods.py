@@ -50,15 +50,15 @@ def serverLogout(connection, cursor): #closes the connection to the database, ca
 
 
 
-def newBuilding(building_name): #building_name is case sensitive, capitalize first letter only
+def newBuilding(building_name, abbrev): #building_name is case sensitive, capitalize first letter only
     try:
         connection = serverLogin()
         cursor = connection.cursor()
         
-        val_insert = (building_name,)
-        cursor.execute("INSERT INTO Buildings (Name) VALUES (%s)", val_insert)
-        create_table_query = "CREATE TABLE IF NOT EXISTS %s LIKE BuildingTemplate"
-        cursor.execute(create_table_query, (building_name,))
+        val_insert = (building_name, abbrev)
+        cursor.execute("INSERT INTO Buildings (Name, Abbrev) VALUES (%s, %s)", val_insert)
+        create_table_query = f"CREATE TABLE IF NOT EXISTS `{building_name}` LIKE BuildingTemplate"
+        cursor.execute(create_table_query)
         connection.commit()
     except mysql.connector.Error as err:
         print(f"Error: {err}")
@@ -77,13 +77,13 @@ def newVM(building_name, room_num): #building_name is case sensitive
         row = cursor.fetchone()
         abbrev = row[0]
         base_prefix = f"VM{abbrev}{room_num}"
-        count_vms_query = "SELECT COUNT(*) FROM %s WHERE VMID LIKE %s"
-        cursor.execute(count_vms_query, (building_name, f"{base_prefix}%"))
+        count_vms_query = f"SELECT COUNT(*) FROM `{building_name}` WHERE VMID LIKE %s"
+        cursor.execute(count_vms_query, (f"{base_prefix}%",))
         row = cursor.fetchone()
         vm_count = row[0]
         vm_id = f"{base_prefix}{vm_count}"
-        insert_query = "INSERT INTO %s (VMID, Location) VALUES(%s, %s)"
-        cursor.execute(insert_query, (building_name, vm_id, room_num))
+        insert_query = f"INSERT INTO `{building_name}` (VMID, Room_Number) VALUES(%s, %s)"
+        cursor.execute(insert_query, (vm_id, room_num))
         update_building_query = "UPDATE Buildings SET VMs = VMs + 1 WHERE Name = %s"
         cursor.execute(update_building_query, (building_name,))
         connection.commit()
@@ -225,6 +225,7 @@ def newUser(user_email, user_password): #creates a new user with the specified e
 
 def fetchVMs(building_name): #returns a list of VM IDs in the specified building
     vm_list = []
+    cleaned_building_name = "".join(char for char in building_name if(char.isalnum() or char == "_")) # Escape backticks in building name
     try:
         connection = serverLogin()
         cursor = connection.cursor()
