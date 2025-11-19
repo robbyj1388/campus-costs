@@ -230,7 +230,7 @@ def fetchVMs(building_name): #returns a list of VM IDs in the specified building
         connection = serverLogin()
         cursor = connection.cursor()
 
-        fetch_vms_query = f"SELECT VMID FROM '{cleaned_building_name}'"
+        fetch_vms_query = f"SELECT VMID FROM {cleaned_building_name}"
         cursor.execute(fetch_vms_query)
         rows = cursor.fetchall()
         for row in rows:
