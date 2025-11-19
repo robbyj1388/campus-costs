@@ -29,7 +29,7 @@
           {% for building in blding %}
             <li>
               <!-- Link to page that shows vending machines in this building -->
-              <a href="{{ url_for('vending_temp', building_name=building[0], vending_name=vnding[0][0] if vnding else '') }}">
+              <a href="{{ url_for('vending_temp', building_name=building[0], vending_name=vnding[0] if vnding else '') }}">
                 {{ building[0] }}
               </a>
             </li>
@@ -40,7 +40,7 @@
 		
 			<section id = "page_content">
 				<ul>
-          <li> <a href="{{ url_for('vending_temp', building_name='VMTES1210') }}">Vending Machine 1.</a> </li>
+          <li> <a href="{{ url_for('vending_temp', building_name='VMTES1210', vending_name='VMTES1210') }}">Vending Machine 1.</a> </li>
 				
 					<li>Vending Machine 2.</li> <!--TODO: Make an existing machine-->
 					

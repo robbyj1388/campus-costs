@@ -36,14 +36,20 @@ def login():
 # Load data to vending_temp html
 @app.route('/vending_temp/<string:building_name>')
 def vending_temp(building_name):
-    match building_name:
-        case 'Wads':
-            print("Wads")
+    vendingList = CampusCostMethods.fetchVMs(building_name)
+    if not vendingList:
+        return "No vending machines found for this building."
     
-    # Get products from vending machine id
-    items = CampusCostMethods.fetchProducts("VMTES1210");
+    vending_name = vendingList[0]  # pick first vending machine automatically
+    items = CampusCostMethods.fetchProducts(vending_name)
     
-    return render_template('vending_temp.html', items=items, building_name=building_name)
+    return render_template(
+        'vending_temp.html',
+        items=items,
+        building_name=building_name,
+        vending_name=vending_name,
+        vnding=vendingList
+    )
     
 # Load main menu page
 @app.route('/index')
