@@ -25,33 +25,27 @@
 						<h2>Near-by Vending Machines</h2>
 						
 					</header>
-					<ul>
-						<li>
-							<a href = "">Another Vending Machine</a><!--TODO: Replace with dynamic links to other vending machines-->
-						</li>
-						<li>
-							<a href = "">Another Vending Machine</a>
-						</li>
-						<li>
-							<a href = "">Another Vending Machine</a>
-						</li>
-					</ul>
+          <ul>
+            {% for vending in vnding %}
+              <li>
+                <a href="{{ url_for('vending_temp', vending_name=vending[0]) }}">
+                  {{ vending[0]}}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
 				</nav>
 			
 			</section>
 			
 			<section class = "mainbox"> <!--TODO: main content of page-->
 				
-				<section class = "mainbox_outer">
-					<h1 class = "mainbox_outer_items">*Current Building Here*</h1>
+				<section class = "mainbox_header">
+		
+					<h1 class = "mainbox_header_items">Vending Machine 1</h1>
+					<h1 class = "mainbox_header_items">*LOCATION HERE*</h1>
 					
-					<section class = "mainbox_header">
-						
-						<h2 class = "mainbox_header_items">Vending Machine 1</h1>
-						<h2 class = "mainbox_header_items">*LOCATION HERE*</h1>
-						
-						
-					</section>
+					
 				</section>
 				<table>
             <!-- for loop for item in items, load in app.py -->  
