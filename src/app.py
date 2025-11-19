@@ -38,16 +38,21 @@ def register():
     
 #Load vending machine template page
 # Load data to vending_temp html
-@app.route('/vending_temp/<string:building_name>')
-def vending_temp(building_name):
-    match building_name:
-        case 'Wads':
-            print("Wads")
-    
-    # Get products from vending machine id
-    items = CampusCostMethods.fetchProducts("VMTES1210");
-    
-    return render_template('vending_temp.html', items=items, building_name=building_name)
+@app.route('/vending_temp/<string:building_name>/<string:vending_name>')
+def vending_temp(building_name, vending_name):
+    # Get all vending machines in this building
+    vendingList = CampusCostMethods.fetchVMs(building_name)
+
+    # Get items for the selected vending machine
+    items = CampusCostMethods.fetchProducts(vending_name)
+
+    return render_template(
+        'vending_temp.html',
+        items=items,
+        building_name=building_name,
+        vending_name=vending_name,
+        vnding=vendingList
+    )
     
 # Load main menu page
 @app.route('/index')
@@ -58,7 +63,7 @@ def index():
 
     # Fetch buildings from CampusCostMethods
     buildings = CampusCostMethods.fetchBuildings()
-    print(buildings)
+
     # Render index.html with buildings data
     return render_template('index.html', blding=buildings)
     

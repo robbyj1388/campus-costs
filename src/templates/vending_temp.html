@@ -25,17 +25,15 @@
 						<h2>Near-by Vending Machines</h2>
 						
 					</header>
-					<ul>
-						<li>
-							<a href = "">Another Vending Machine</a>
-						</li>
-						<li>
-							<a href = "">Another Vending Machine</a>
-						</li>
-						<li>
-							<a href = "">Another Vending Machine</a>
-						</li>
-					</ul>
+          <ul>
+            {% for vending in vnding %}
+              <li>
+                <a href="{{ url_for('vending_temp', vending_name=vending[0]) }}">
+                  {{ vending[0]}}
+                </a>
+              </li>
+            {% endfor %}
+          </ul>
 				</nav>
 			
 			</section>
