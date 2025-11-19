@@ -38,12 +38,13 @@ def login():
 def vending_temp(building_name):
     vending_name = request.args.get('vending_name')
     vendingList = CampusCostMethods.fetchVMs(building_name)
+    # default to first vending machine in list
     if not vending_name and vendingList:
         vending_name = vendingList[0]
 
 
     items = CampusCostMethods.fetchProducts(vending_name)
-    
+
     return render_template(
         'vending_temp.html',
         items=items,
@@ -61,7 +62,6 @@ def index():
 
     # Fetch buildings from CampusCostMethods
     buildings = CampusCostMethods.fetchBuildings()
-    print(buildings)
     # Render index.html with buildings data
     return render_template('index.html', blding=buildings)
     
