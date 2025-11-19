@@ -29,12 +29,8 @@ def login():
         return redirect(url_for('index'))
     else:
         # Invalid login
-        return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
+        return "<h1>Invalid username or password</h1><a href='{url_for('home')}'>Try again</a>"
 
-# Register / create account page
-@app.route('/register')
-def register():
-    return render_template('register.html')
     
 #Load vending machine template page
 # Load data to vending_temp html
@@ -53,6 +49,7 @@ def vending_temp(building_name, vending_name):
         vending_name=vending_name,
         vnding=vendingList
     )
+
     
 # Load main menu page
 @app.route('/index')
@@ -70,17 +67,18 @@ def index():
 #TODO: Method to handle finding photo 
 
 # Handle registration form submission
-@app.route('/register', methods=['POST'])
-def register_user():
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+
     username = request.form['username']
     password = request.form['password']
-    
-    # Check if user already exists, if not newUser adds to database
-    if not CampusCostMethods.newUser(username,password): 
-        return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
-    else:
-        return "<h1>Account created successfully!</h1><a href='/'>Login here</a>"
 
+    if not CampusCostMethods.newUser(username, password):
+        return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
+
+    return f"<h1>Account created successfully!</h1><a href='{url_for('home')}'>Login here</a>"
 
 
 
