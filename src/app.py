@@ -36,15 +36,17 @@ def login():
 # Load data to vending_temp html
 @app.route('/vending_temp/<string:building_name>')
 def vending_temp(building_name):
-    vending_name = request.args.get('vending_name')
     vendingList = CampusCostMethods.fetchVMs(building_name)
-    # default to first vending machine in list
+    
+    vending_name = request.args.get('vending_name')
+    
+    # Default to first vending machine if none is selected
     if not vending_name and vendingList:
-        vending_name = vendingList[0]
+        vending_name = vendingList[0][0]  # first element of first tuple
 
-
+    # Fetch products for selected vending machine
     items = CampusCostMethods.fetchProducts(vending_name)
-
+    
     return render_template(
         'vending_temp.html',
         items=items,
