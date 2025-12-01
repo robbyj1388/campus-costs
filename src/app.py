@@ -17,6 +17,11 @@ app.secret_key = os.urandom(24)  # Secret key required for session management
 def home():
     return render_template('login.html')
 
+# load map page
+@app.route('/map')
+def map():
+    return render_template('map.html')
+
 # Login form submission
 @app.route('/login', methods=['POST'])
 def login():
