@@ -25,22 +25,22 @@
 			
 			<section> <!--Section for testing buildings being dynamically displayed-->
 				
-				<ul>
+        <ul>
           {% for building in blding %}
             <li>
-              <a href="{{ url_for('vending_temp', building_name=building[0]) }}">
-                {{ building[0]}}
+              <!-- Link to page that shows vending machines in this building -->
+              <a href="{{ url_for('vending_temp', building_name=building[0], vending_name=vnding[0] if vnding else '') }}">
+                {{ building[0] }}
               </a>
             </li>
           {% endfor %}
-				</ul>
+        </ul>
 			
 			</section>
 		
 			<section id = "page_content">
 				<ul>
-          <li> 
-            <a href="{{ url_for('vending_temp', building_name='VMTES1210') }}">Vending Machine 1.</a> </li>
+          <li> <a href="{{ url_for('vending_temp', building_name='VMTES1210', vending_name='VMTES1210') }}">Vending Machine 1.</a> </li>
 				
 					<li>Vending Machine 2.</li> <!--TODO: Make an existing machine-->
 					

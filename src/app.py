@@ -17,6 +17,11 @@ app.secret_key = os.urandom(24)  # Secret key required for session management
 def home():
     return render_template('login.html')
 
+# load map page
+@app.route('/map')
+def map():
+    return render_template('map.html')
+
 # Login form submission
 @app.route('/login', methods=['POST'])
 def login():
@@ -29,23 +34,24 @@ def login():
         return redirect(url_for('index'))
     else:
         # Invalid login
-        return "<h1>Invalid username or password</h1><a href='/'>Try again</a>"
+        return "<h1>Invalid username or password</h1><a href='{url_for('home')}'>Try again</a>"
 
-# Register / create account page
-@app.route('/register')
-def register():
-    return render_template('register.html')
     
 #Load vending machine template page
 # Load data to vending_temp html
-@app.route('/vending_temp/<string:building_name>/<string:vending_name>')
-def vending_temp(building_name, vending_name):
-    # Get all vending machines in this building
+@app.route('/vending_temp/<string:building_name>')
+def vending_temp(building_name):
     vendingList = CampusCostMethods.fetchVMs(building_name)
+    
+    vending_name = request.args.get('vending_name')
+    
+    # Default to first vending machine if none is selected
+    if not vending_name and vendingList:
+        vending_name = vendingList[0][0]  # first element of first tuple
 
-    # Get items for the selected vending machine
+    # Fetch products for selected vending machine
     items = CampusCostMethods.fetchProducts(vending_name)
-
+    
     return render_template(
         'vending_temp.html',
         items=items,
@@ -63,24 +69,24 @@ def index():
 
     # Fetch buildings from CampusCostMethods
     buildings = CampusCostMethods.fetchBuildings()
-
     # Render index.html with buildings data
     return render_template('index.html', blding=buildings)
     
 #TODO: Method to handle finding photo 
 
 # Handle registration form submission
-@app.route('/register', methods=['POST'])
-def register_user():
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'GET':
+        return render_template('register.html')
+
     username = request.form['username']
     password = request.form['password']
-    
-    # Check if user already exists, if not newUser adds to database
-    if not CampusCostMethods.newUser(username,password): 
-        return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
-    else:
-        return "<h1>Account created successfully!</h1><a href='/'>Login here</a>"
 
+    if not CampusCostMethods.newUser(username, password):
+        return "<h1>Username already exists!</h1><a href='/register'>Try again</a>"
+
+    return f"<h1>Account created successfully!</h1><a href='{url_for('home')}'>Login here</a>"
 
 
 
