@@ -34,8 +34,7 @@ def login():
         return redirect(url_for('index'))
     else:
         # Invalid login
-        
-        return "<h1>Invalid username or password</h1><a href = ''/''>Try again</a>"
+        return "<h1>Invalid username or password</h1><a href=\"/\">Try again</a>"
 
     
 #Load vending machine template page
